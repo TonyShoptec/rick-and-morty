@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CardMania</title>
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #1e1e1e;
+      padding: 1rem 2rem;
+      color: white;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #00c6ff;
+    }
+
+    main {
+      padding: 2rem;
+    }
+
+    .cards-section h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .filter-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-container select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 1rem;
+    }
+
+    .card-name {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-tag {
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .alive {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .dead {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .card-species {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .btn-detalhes {
+      margin-top: 0.5rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background-color 0.3s;
+    }
+
+    .btn-detalhes:hover {
+      background-color: #0056b3;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .pagination button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .pagination button:hover {
+      background-color: #0056b3;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #1e1e1e;
+      color: white;
+      margin-top: 3rem;
+    }
+
+    /* Estilos do Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-content img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.2rem;
+      color: #333;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .modal-info {
+      margin-top: 1rem;
+    }
+
+    .modal-info p {
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">CardMania</div>
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Personagens</a></li>
+        <li><a href="#">Sobre</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="cards-section">
+      <h2>Personagens de Rick and Morty</h2>
+      <div class="filter-container">
+        <label for="statusFilter">Filtrar por Status:</label>
+        <select id="statusFilter">
+          <option value="">Todos</option>
+          <option value="alive">Vivos</option>
+          <option value="dead">Mortos</option>
+        </select>
+      </div>
+      <div class="card-grid" id="characterGrid"></div>
+      <div class="pagination" id="pagination"></div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal" id="characterModal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <img src="" alt="Imagem do Personagem" id="modalImage">
+      <h2 id="modalName"></h2>
+      <div class="modal-info">
+        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+        <p><strong>Espécie:</strong> <span id="modalSpecies"></span></p>
+        <p><strong>Gênero:</strong> <span id="modalGender"></span></p>
+        <p><strong>Localização:</strong> <span id="modalLocation"></span></p>
+        <p><strong>Último Episódio:</strong> <span id="modalEpisode"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 CardMania - Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    const characterGrid = document.getElementById('characterGrid');
+    const pagination = document.getElementById('pagination');
+    const statusFilter = document.getElementById('statusFilter');
+
+    let currentPage = 1;
+    let allCharacters = [];
+
+    async function fetchCharacters(page) {
+      const res = await fetch(`https://rickandmortyapi.com/api/character/?page=${page}`);
+      const data = await res.json();
+      return data;
+    }
+
+    function renderCharacters(characters) {
+      characterGrid.innerHTML = '';
+      characters.forEach(char => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const image = document.createElement('img');
+        image.src = char.image;
+        image.alt = `${char.name} - ${char.species}`;
+
+        const content = document.createElement('div');
+        content.className = 'card-content';
+
+        const name = document.createElement('div');
+        name.className = 'card-name';
+
+        const nameLabel = document.createElement('span');
+        nameLabel.textContent = char.name;
+
+        const statusTag = document.createElement('span');
+        statusTag.className = `status-tag ${char.status.toLowerCase()}`;
+        statusTag.textContent = char.status;
+
+        name.appendChild(nameLabel);
+        name.appendChild(statusTag);
+
+        const species = document.createElement('div');
+        species.className = 'card-species';
+        species.textContent = `Espécie: ${char.species}`;
+
+        const btnDetalhes = document.createElement('button');
+        btnDetalhes.className = 'btn-detalhes';
+        btnDetalhes.textContent = 'Detalhes';
+        btnDetalhes.onclick = () => openModal(char);
+
+        content.appendChild(name);
+        content.appendChild(species);
+        content.appendChild(btnDetalhes);
+
+        card.appendChild(image);
+        card.appendChild(content);
+        characterGrid.appendChild(card);
+      });
+    }
+
+    function createPagination(totalPages) {
+      pagination.innerHTML = '';
+
+      const totalPagesToShow = 5;
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
+
+      if (endPage - startPage < totalPagesToShow - 1) {
+        startPage = Math.max(1, endPage - totalPagesToShow + 1);
+      }
+
+      if (startPage > 1) {
+        const btnFirst = document.createElement('button');
+        btnFirst.textContent = '<<';
+        btnFirst.addEventListener('click', () => {
+          currentPage = 1;
+          loadPage(currentPage);
+        });
+        pagination.appendChild(btnFirst);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.disabled = i === currentPage;
+        btn.addEventListener('click', () => {
+          currentPage = i;
+          loadPage(currentPage);
+        });
+        pagination.appendChild(btn);
+      }
+
+      if (endPage < totalPages) {
+        const btnLast = document.createElement('button');
+        btnLast.textContent = '>>';
+        btnLast.addEventListener('click', () => {
+          currentPage = totalPages;
+          loadPage(currentPage);
+        });
+        pagination.appendChild(btnLast);
+      }
+    }
+
+    async function loadPage(page) {
+      const data = await fetchCharacters(page);
+      allCharacters.push(...data.results); // Armazena todos os personagens carregados
+      applyFilter(); // Aplica o filtro automaticamente
+      createPagination(data.info.pages);
+    }
+
+    function applyFilter() {
+      const selectedStatus = statusFilter.value.toLowerCase();
+
+      const filteredCharacters = allCharacters.filter(char => {
+        if (selectedStatus === '') return true;
+        return char.status.toLowerCase() === selectedStatus;
+      });
+
+      renderCharacters(filteredCharacters);
+    }
+
+    // Adiciona evento ao seletor de status
+    statusFilter.addEventListener('change', applyFilter);
+
+    // Inicializa a página
+    loadPage(currentPage);
+
+    // Funções do modal
+    function openModal(character) {
+      try {
+        document.getElementById('modalName').textContent = character.name;
+        document.getElementById('modalStatus').textContent = character.status;
+        document.getElementById('modalSpecies').textContent = character.species;
+        document.getElementById('modalGender').textContent = character.gender;
+        document.getElementById('modalLocation').textContent = character.location.name;
+        document.getElementById('modalImage').src = character.image;
+        document.getElementById('modalEpisode').textContent = character.episode.length > 0 ? character.episode[0] : 'N/A';
+
+        document.getElementById('characterModal').style.display = 'flex';
+      } catch (error) {
+        console.error("Erro ao abrir o modal:", error);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('characterModal').style.display = 'none';
+    }
+
+    // Fecha o modal ao clicar fora dele
+    window.onclick = function(event) {
+      const modal = document.getElementById('characterModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html>
